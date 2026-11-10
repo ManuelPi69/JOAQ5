@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="theme-color" content="#101827" />
+  <title>Laboratório 3D — Seções Cônicas e Sólidos de Revolução</title>
+  <style>
+    :root{--bg:#0b1220;--panel:#121e30;--panel2:#17263b;--line:#2b405d;--text:#eef5ff;--muted:#a9bbd2;--cyan:#54d6e8;--gold:#ffc96b;--violet:#b49aff;--green:#78dfb0;--red:#ff8b8b}
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    button,input{font:inherit}button{cursor:pointer;border:1px solid var(--line);border-radius:12px;color:var(--text);background:#20314a;padding:10px 13px;transition:.15s}button:hover{border-color:var(--cyan);background:#29415e}button:focus-visible,input:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}button.primary{background:#087f98;border-color:#26bbd1}button.active{background:#0c6177;border-color:var(--cyan)}button:disabled{opacity:.4;cursor:not-allowed}
+    #app{display:grid;grid-template-columns:minmax(0,1fr) 360px;width:100%;height:100%}#stage{position:relative;min-width:0;min-height:0}#scene{display:block;width:100%;height:100%;touch-action:none}
+    #topbar{position:absolute;left:18px;top:16px;right:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;pointer-events:none}#brand{pointer-events:auto;padding:10px 14px;background:#0b1727d9;border:1px solid #36506c;border-radius:14px;backdrop-filter:blur(12px)}#brand strong{display:block;font-size:14px;letter-spacing:.02em}#brand span{color:var(--muted);font-size:12px}#stage-actions{display:flex;gap:8px;pointer-events:auto}#stage-actions button{background:#0b1727d9;backdrop-filter:blur(12px)}
+    #hint{position:absolute;left:18px;bottom:16px;max-width:min(560px,calc(100% - 36px));padding:10px 14px;border:1px solid #36506c;border-radius:12px;background:#0b1727df;color:#d8e8fa;font-size:12px;pointer-events:none}
+    #side{overflow:auto;background:var(--panel);border-left:1px solid var(--line);padding:20px 18px 28px;scrollbar-color:#38516e transparent}#side h1{font-size:21px;line-height:1.2;margin:0 0 8px}#side h2{font-size:15px;margin:18px 0 8px}#side p{color:#c0cee0;margin:7px 0}#side .muted{color:var(--muted);font-size:12px}.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.13em;color:var(--cyan);font-weight:700}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:15px 0}.tabs button{padding:9px 6px;font-size:13px}.control{margin:14px 0;padding:13px;background:var(--panel2);border:1px solid var(--line);border-radius:14px}.control label{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:600}.control input[type=range]{width:100%;accent-color:var(--cyan);margin:12px 0 2px}.presets{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}.presets button{padding:8px 2px;font-size:12px}.readout{border-left:3px solid var(--cyan);padding:9px 12px;background:#10283a;border-radius:0 10px 10px 0;margin:12px 0}.readout strong{display:block;font-size:17px}.readout small{color:var(--muted)}.equation{font-family:Georgia,serif;color:#fff;background:#0b1625;padding:10px;border-radius:10px;text-align:center;letter-spacing:.02em}.legend{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.legend span{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}.dot{width:9px;height:9px;display:inline-block;border-radius:50%}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{flex:1;min-width:95px}.step-head{display:flex;align-items:center;justify-content:space-between;margin:16px 0 6px}.progress{height:6px;background:#263a53;border-radius:10px;overflow:hidden;margin:8px 0 12px}.progress>i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));width:0;transition:width .25s}.step-card{padding:13px;border:1px solid var(--line);border-radius:13px;background:#101b2c}.step-card p{font-size:13px}.small{font-size:12px!important}.solid-select{width:100%;padding:10px;border-radius:10px;background:#20314a;color:var(--text);border:1px solid var(--line)}#quiz{display:none}#quiz .q{padding:12px;border:1px solid var(--line);border-radius:12px;margin:10px 0;background:#101b2c}#quiz .q p{font-size:13px;color:var(--text);font-weight:650}#quiz label{display:flex;gap:8px;align-items:flex-start;padding:6px 0;color:#c6d4e6;font-size:13px}#quiz input{accent-color:var(--cyan);margin-top:3px}#result{margin-top:10px;padding:12px;border-radius:10px;display:none;background:#14382f;border:1px solid #2b896c}
+    #vrstatus{position:absolute;right:18px;bottom:16px;color:#9fb4cb;font-size:11px;text-align:right;pointer-events:none}
+    @media(max-width:900px){#app{grid-template-columns:minmax(0,1fr) 320px}#side{padding:16px 13px}}
+    @media(max-width:700px){#app{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) 45vh}#side{border-left:0;border-top:1px solid var(--line);padding:14px 16px}#topbar{left:10px;right:10px;top:10px}#brand{padding:8px 10px}#brand span{display:none}#hint{left:10px;bottom:10px}#vrstatus{display:none}}
+    #fatalError{display:none;position:fixed;z-index:99;left:16px;right:16px;top:16px;max-width:760px;margin:auto;padding:14px 16px;background:#4a1f2a;border:1px solid #ff8b8b;border-radius:12px;color:#fff;box-shadow:0 12px 36px #0008}
+    #fatalError strong{display:block;margin-bottom:4px}
+  </style>
+  <script>
+    // Mostra um diagnóstico útil caso o navegador bloqueie os módulos/CDN.
+    function showAppError(message){
+      const box=document.getElementById('fatalError');
+      if(box){box.style.display='block';box.querySelector('[data-error]').textContent=message;}
+    }
+    window.addEventListener('error',e=>{if(e.message)showAppError(e.message);});
+    window.addEventListener('unhandledrejection',e=>showAppError(e.reason?.message||String(e.reason||'Falha ao carregar um recurso.')));
+  </script>
+</head>
+<body>
+<div id="app">
+  <main id="stage">
+    <canvas id="scene"></canvas>
+    <div id="topbar">
+      <div id="brand"><strong>LABORATÓRIO 3D · GEOMETRIA</strong><span>Seções cônicas e sólidos de revolução</span></div>
+      <div id="stage-actions"><button id="resetView" title="Restaurar câmera">↺ Câmera</button><button id="fullscreen" title="Tela cheia">⛶ Tela cheia</button></div>
+    </div>
+    <div id="hint">Arraste para orbitar · Role para aproximar · No VR: use o gatilho para alternar entre os quatro ângulos de referência.</div>
+    <div id="vrstatus">Verificando WebXR…</div>
+  </main>
+  <aside id="side">
+    <div class="eyebrow">Matemática · Ensino Fundamental II / Médio</div>
+    <h1>Da interseção à curva</h1>
+    <p class="small">Investigue como a inclinação de um plano transforma a seção de um cone duplo.</p>
+    <div class="tabs"><button id="tabConics" class="active">Seções cônicas</button><button id="tabSolids">Sólidos de revolução</button></div>
+
+    <section id="conicsPanel">
+      <div class="readout"><small>SEÇÃO ATUAL</small><strong id="curveName">Circunferência</strong><small id="curveRule">Plano perpendicular ao eixo do cone.</small></div>
+      <div class="control">
+        <label for="angle"><span>Inclinação do plano</span><output id="angleValue">0°</output></label>
+        <input id="angle" type="range" min="0" max="75" step="1" value="0" />
+        <div class="presets"><button data-angle="0">0°</button><button data-angle="25">25°</button><button data-angle="59">59°</button><button data-angle="68">68°</button></div>
+        <p class="muted">A inclinação é medida a partir do plano horizontal. O encaixe magnético destaca ângulos notáveis.</p>
+      </div>
+      <div class="control">
+        <label for="offset"><span>Altura do corte</span><output id="offsetValue">1,2</output></label>
+        <input id="offset" type="range" min="0.5" max="2.2" step="0.1" value="1.2" />
+      </div>
+      <div class="legend"><span><i class="dot" style="background:#5de2ef"></i>Plano de corte</span><span><i class="dot" style="background:#ffc96b"></i>Curva gerada</span><span><i class="dot" style="background:#9fb8d5"></i>Cone duplo</span></div>
+      <div class="equation" id="equation">x² + z² = k²y²</div>
+      <p id="explanation" class="small">Um plano horizontal corta apenas uma das folhas do cone e produz uma circunferência.</p>
+      <div class="actions"><button id="showPlane" class="active">Plano visível</button><button id="showCurve" class="active">Curva visível</button></div>
+      <div class="step-head"><strong>Trilha de aprendizagem</strong><span class="muted" id="stepCount">1 / 6</span></div>
+      <div class="progress"><i id="progressBar"></i></div>
+      <div class="step-card"><div class="eyebrow" id="stepLabel">ETAPA 1 · OBSERVAR</div><h2 id="stepTitle">Conheça o cone duplo</h2><p id="stepText">Observe as duas folhas que se encontram no vértice. Imagine um plano atravessando esse sólido transparente.</p><div class="actions"><button id="prevStep" disabled>← Anterior</button><button id="nextStep" class="primary">Próxima →</button></div></div>
+    </section>
+
+    <section id="solidsPanel" style="display:none">
+      <p class="small">Um sólido de revolução é formado quando uma região plana gira em torno de um eixo.</p>
+      <div class="control"><label for="solidType"><span>Escolha o sólido</span></label><select class="solid-select" id="solidType"><option value="cylinder">Cilindro · retângulo</option><option value="cone">Cone · triângulo retângulo</option><option value="sphere">Esfera · semicírculo</option></select></div>
+      <div class="readout"><small>IDEIA GERADORA</small><strong id="solidName">Cilindro</strong><small id="solidRule">Rotação de um retângulo em torno de um de seus lados.</small></div>
+      <div class="equation" id="solidFormula">V = πr²h</div>
+      <p class="small" id="solidDescription">As duas bases são círculos congruentes e a superfície lateral, quando aberta, forma um retângulo.</p>
+      <div class="actions"><button id="explode">Explodir / planificar</button><button id="resetSolid">Recompor</button></div>
+      <div class="step-card"><div class="eyebrow">OBSERVAÇÃO IMPORTANTE</div><p id="netNote" class="small">A planificação do cilindro é formada por dois círculos e um retângulo.</p></div>
+    </section>
+
+    <section id="quiz">
+      <div class="eyebrow">Verificação da aprendizagem</div><h1>Quiz das cônicas</h1><p class="small">Responda às quatro questões e confira seu resultado.</p>
+      <form id="quizForm">
+        <div class="q"><p>1. Um plano perpendicular ao eixo do cone (horizontal) gera:</p><label><input type="radio" name="q1" value="a"> Parábola</label><label><input type="radio" name="q1" value="b"> Circunferência</label><label><input type="radio" name="q1" value="c"> Hipérbole</label></div>
+        <div class="q"><p>2. Quando o plano é oblíquo e corta somente uma folha do cone, sem ser paralelo a uma geratriz, temos:</p><label><input type="radio" name="q2" value="a"> Elipse</label><label><input type="radio" name="q2" value="b"> Hipérbole</label><label><input type="radio" name="q2" value="c"> Cilindro</label></div>
+        <div class="q"><p>3. A parábola aparece quando o plano de corte é:</p><label><input type="radio" name="q3" value="a"> Perpendicular ao eixo</label><label><input type="radio" name="q3" value="b"> Paralelo a uma geratriz</label><label><input type="radio" name="q3" value="c"> Paralelo à base</label></div>
+        <div class="q"><p>4. Quando o plano atravessa as duas folhas do cone duplo, a seção é:</p><label><input type="radio" name="q4" value="a"> Circunferência</label><label><input type="radio" name="q4" value="b"> Elipse</label><label><input type="radio" name="q4" value="c"> Hipérbole</label></div>
+        <button type="submit" class="primary">Corrigir respostas</button>
+      </form>
+      <div id="result" role="status"></div>
+      <div class="actions"><button id="backToLesson">← Voltar à trilha</button></div>
+    </section>
+    <p class="muted" style="margin-top:18px">Protótipo didático. Para uso em VR, publique em HTTPS e teste no navegador do headset.</p>
+  </aside>
+</div>
+<div id="fatalError" role="alert"><strong>O laboratório não conseguiu iniciar.</strong><span data-error>Verifique a conexão e abra o site por um servidor local ou HTTPS.</span><p style="margin:8px 0 0;font-size:13px">Não abra o HTML com duplo clique (file://). No Windows, use o arquivo <b>INICIAR_LOCAL.bat</b> incluído no pacote.</p></div>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { VRButton } from 'three/addons/webxr/VRButton.js';
+
+const canvas=document.querySelector('#scene');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));renderer.setSize(canvas.clientWidth,canvas.clientHeight,false);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;renderer.xr.enabled=true;
+const scene=new THREE.Scene();scene.background=new THREE.Color('#0b1423');
+const camera=new THREE.PerspectiveCamera(48,1,.1,100);camera.position.set(8,5.6,10);
+const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,0);orbit.enableDamping=true;orbit.dampingFactor=.06;orbit.minDistance=5;orbit.maxDistance=24;orbit.update();
+scene.add(new THREE.HemisphereLight(0xa9d9ff,0x17243a,2));
+const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(5,8,6);scene.add(key);
+const fill=new THREE.PointLight(0x37c9e8,45,18);fill.position.set(-4,2,3);scene.add(fill);
+const grid=new THREE.GridHelper(22,22,0x3b6684,0x20364e);grid.position.y=-6.15;scene.add(grid);
+const axes=new THREE.AxesHelper(2.2);axes.position.set(-5.2,-5.9,-4);scene.add(axes);
+
+const coneGroup=new THREE.Group();scene.add(coneGroup);const K=.6,H=6,R=K*H;
+function makeLeaf(up){const g=new THREE.ConeGeometry(R,H,72,1,true);g.scale(1,up?-1:1,1);g.translate(0,up?H/2:-H/2,0);const mesh=new THREE.Mesh(g,new THREE.MeshPhysicalMaterial({color:0x89b9dc,metalness:.12,roughness:.17,transparent:true,opacity:.15,side:THREE.DoubleSide,depthWrite:false,transmission:.15}));coneGroup.add(mesh);const wire=new THREE.LineSegments(new THREE.WireframeGeometry(g),new THREE.LineBasicMaterial({color:0x8db7d8,transparent:true,opacity:.24}));coneGroup.add(wire);}
+makeLeaf(true);makeLeaf(false);
+const vertex=new THREE.Mesh(new THREE.SphereGeometry(.07,16,12),new THREE.MeshBasicMaterial({color:0xffffff}));coneGroup.add(vertex);
+// Generator lines emphasize the two nappes.
+for(let i=0;i<12;i++){const a=i*Math.PI/6;const pts=[new THREE.Vector3(0,0,0),new THREE.Vector3(R*Math.cos(a),H,R*Math.sin(a)),new THREE.Vector3(0,0,0),new THREE.Vector3(R*Math.cos(a),-H,R*Math.sin(a))];const geo=new THREE.BufferGeometry().setFromPoints(pts);coneGroup.add(new THREE.LineSegments(geo,new THREE.LineBasicMaterial({color:0xa8c8e6,transparent:true,opacity:.25})));}
+const planeMaterial=new THREE.MeshBasicMaterial({color:0x36d5e8,transparent:true,opacity:.20,side:THREE.DoubleSide,depthWrite:false});
+const planeGeo=new THREE.BufferGeometry();const planeMesh=new THREE.Mesh(planeGeo,planeMaterial);coneGroup.add(planeMesh);const planeEdges=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(12,12)),new THREE.LineBasicMaterial({color:0x5de2ef,transparent:true,opacity:.85}));coneGroup.add(planeEdges);
+const curveGroup=new THREE.Group();coneGroup.add(curveGroup);
+function updatePlane(){const angle=+document.querySelector('#angle').value;const b=THREE.MathUtils.degToRad(angle),m=Math.tan(b),c=+document.querySelector('#offset').value;const den=1+m*m;const p0=new THREE.Vector3(-m*c/den,c/den,0);const u=new THREE.Vector3(1,m,0).normalize(),v=new THREE.Vector3(0,0,1);const s=6.8;const pts=[p0.clone().addScaledVector(u,-s).addScaledVector(v,-s),p0.clone().addScaledVector(u,s).addScaledVector(v,-s),p0.clone().addScaledVector(u,s).addScaledVector(v,s),p0.clone().addScaledVector(u,-s).addScaledVector(v,s)];const pos=new Float32Array([...pts[0].toArray(),...pts[1].toArray(),...pts[2].toArray(),...pts[0].toArray(),...pts[2].toArray(),...pts[3].toArray()]);planeGeo.dispose();planeMesh.geometry=new THREE.BufferGeometry();planeMesh.geometry.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));planeMesh.geometry.computeVertexNormals();planeEdges.geometry.dispose();const edgePoints=[pts[0],pts[1],pts[1],pts[2],pts[2],pts[3],pts[3],pts[0]];planeEdges.geometry=new THREE.BufferGeometry().setFromPoints(edgePoints);planeEdges.geometry.computeBoundingSphere();
+  curveGroup.clear();const segs=720;let group=[];const flush=()=>{if(group.length>1){const g=new THREE.BufferGeometry().setFromPoints(group);curveGroup.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0xffc96b,linewidth:2})));}group=[];};
+  for(let i=0;i<=segs;i++){const phi=2*Math.PI*i/segs;const deno=1-m*K*Math.cos(phi);const y=c/deno;if(!Number.isFinite(y)||Math.abs(y)>5.7){flush();continue;}const p=new THREE.Vector3(K*y*Math.cos(phi),y,K*y*Math.sin(phi));if(group.length&&p.distanceTo(group[group.length-1])>1.2)flush();group.push(p);}flush();
+  classify(angle);document.querySelector('#angleValue').textContent=angle+'°';document.querySelector('#offsetValue').textContent=c.toFixed(1).replace('.',',');
+}
+function classify(deg){let name,rule,explain; if(deg===0){name='Circunferência';rule='Plano perpendicular ao eixo do cone.';explain='O plano é paralelo à base e corta uma única folha do cone. Todos os pontos da seção ficam à mesma distância do centro.';}else if(deg<59){name='Elipse';rule='Plano oblíquo que corta apenas uma folha.';explain='O plano inclinado encontra somente uma das folhas do cone. A seção é uma curva fechada: a elipse.';}else if(deg===59){name='Parábola';rule='Plano paralelo a uma geratriz do cone.';explain='No ângulo-limite, o plano fica paralelo a uma geratriz. A seção deixa de ser fechada e forma uma parábola.';}else{name='Hipérbole';rule='Plano que atravessa as duas folhas do cone.';explain='O plano mais inclinado atravessa as duas folhas do cone duplo. A interseção aparece em dois ramos: uma hipérbole.';}document.querySelector('#curveName').textContent=name;document.querySelector('#curveRule').textContent=rule;document.querySelector('#explanation').textContent=explain;}
+
+// Solids of revolution: select one generated solid, plus simple exploded nets.
+const solidsGroup=new THREE.Group();scene.add(solidsGroup);solidsGroup.visible=false;let solidMeshes=[],netGroup=new THREE.Group();solidsGroup.add(netGroup);let currentSolid='cylinder',exploded=false;
+function clearGroup(g){while(g.children.length){const o=g.children.pop();if(o.geometry)o.geometry.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material.dispose();}}}
+function glass(color=0x60c9e2){return new THREE.MeshPhysicalMaterial({color,metalness:.08,roughness:.18,transparent:true,opacity:.36,side:THREE.DoubleSide,depthWrite:false});}
+function shapeCircle(r,z){const sh=new THREE.Shape();sh.absarc(0,0,r,0,Math.PI*2,false);const mesh=new THREE.Mesh(new THREE.ShapeGeometry(sh,48),new THREE.MeshBasicMaterial({color:0x7ce7d0,side:THREE.DoubleSide,transparent:true,opacity:.78}));mesh.rotation.x=-Math.PI/2;mesh.position.set(0,0,z);return mesh;}
+function buildSolid(type){clearGroup(solidsGroup);solidsGroup.add(netGroup=new THREE.Group());solidMeshes=[];currentSolid=type;exploded=false;let solid,profileText,desc,formula,note,name,rule;
+  if(type==='cylinder'){solid=new THREE.Mesh(new THREE.CylinderGeometry(1.55,1.55,3.7,64,1,false),glass());name='Cilindro';rule='Rotação de um retângulo em torno de um de seus lados.';formula='V = πr²h';desc='As bases são círculos congruentes. A superfície lateral, quando aberta, forma um retângulo.';note='Planificação: um retângulo de largura igual ao comprimento da circunferência da base (2πr) e altura h, mais dois círculos.';}
+  else if(type==='cone'){solid=new THREE.Mesh(new THREE.ConeGeometry(1.7,3.8,64,1,false),glass());name='Cone';rule='Rotação de um triângulo retângulo em torno de um cateto.';formula='V = (πr²h) / 3';desc='O raio da base e a altura definem o cone. A lateral aberta forma um setor circular.';note='Planificação: um círculo (base) e um setor circular cujo raio é a geratriz.';}
+  else{solid=new THREE.Mesh(new THREE.SphereGeometry(1.9,64,40),glass(0x9e9cf4));name='Esfera';rule='Rotação de um semicírculo em torno de seu diâmetro.';formula='V = (4/3)πr³';desc='Todos os pontos da superfície estão à mesma distância do centro.';note='A esfera não possui planificação plana exata sem deformar, rasgar ou sobrepor a superfície.';}
+  solid.position.y=type==='cylinder'?0:(type==='cone'?0:0);solidsGroup.add(solid);solidMeshes.push(solid);
+  const wire=new THREE.LineSegments(new THREE.WireframeGeometry(solid.geometry),new THREE.LineBasicMaterial({color:0x9dd5e8,transparent:true,opacity:.3}));wire.position.copy(solid.position);solidsGroup.add(wire);solidMeshes.push(wire);
+  if(type==='cylinder'){
+    const r=1.55,h=3.7;const rect=new THREE.Mesh(new THREE.PlaneGeometry(2*Math.PI*r,h),new THREE.MeshBasicMaterial({color:0x62d7d0,side:THREE.DoubleSide,transparent:true,opacity:.75}));rect.rotation.x=-Math.PI/2;rect.position.set(0,-2.5,0);netGroup.add(rect);netGroup.add(shapeCircle(r,-4.7));netGroup.add(shapeCircle(r,-5.2));
+  }else if(type==='cone'){
+    const r=1.7,h=3.8,l=Math.sqrt(r*r+h*h),theta=2*Math.PI*r/l;const sh=new THREE.Shape();sh.moveTo(0,0);sh.absarc(0,0,l,0,theta,false);sh.lineTo(0,0);const sec=new THREE.Mesh(new THREE.ShapeGeometry(sh,60),new THREE.MeshBasicMaterial({color:0x62d7d0,side:THREE.DoubleSide,transparent:true,opacity:.75}));sec.position.set(0,-3.3,0);netGroup.add(sec);netGroup.add(shapeCircle(r,-4.8));
+  }else{
+    const msg=makeTextPlane('A esfera não possui\nplanificação plana exata',0x17364a);msg.position.set(0,-3.4,0);netGroup.add(msg);
+  }
+  document.querySelector('#solidName').textContent=name;document.querySelector('#solidRule').textContent=rule;document.querySelector('#solidFormula').textContent=formula;document.querySelector('#solidDescription').textContent=desc;document.querySelector('#netNote').textContent=note;netGroup.visible=false;
+}
+function makeTextPlane(text,color){const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');ctx.fillStyle='#'+color.toString(16).padStart(6,'0');ctx.fillRect(0,0,512,128);ctx.fillStyle='#ffffff';ctx.font='bold 26px system-ui';ctx.textAlign='center';text.split('\n').forEach((line,i)=>ctx.fillText(line,256,48+i*35));const tex=new THREE.CanvasTexture(c);const m=new THREE.Mesh(new THREE.PlaneGeometry(4.7,1.2),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide}));return m;}
+function toggleNet(){if(currentSolid==='sphere'){netGroup.visible=true;solidMeshes.forEach(o=>o.visible=false);exploded=true;return;}exploded=!exploded;netGroup.visible=exploded;solidMeshes.forEach(o=>o.visible=!exploded);}
+buildSolid('cylinder');
+
+const steps=[
+ ['ETAPA 1 · OBSERVAR','Conheça o cone duplo','Observe as duas folhas que se encontram no vértice. Imagine um plano atravessando esse sólido transparente.',0],
+ ['ETAPA 2 · EXPERIMENTAR','Circunferência','Deixe o plano horizontal (0°). A interseção é uma circunferência. Gire a câmera para observar o corte de diferentes pontos de vista.',0],
+ ['ETAPA 3 · INCLINAR','Elipse','Incline o plano, mas mantenha o ângulo abaixo do ângulo da geratriz (aprox. 59° neste modelo). O corte continua fechado: uma elipse.',25],
+ ['ETAPA 4 · LIMITE','Parábola','Aproxime o plano do ângulo crítico. Quando ele fica paralelo a uma geratriz do cone, a seção é uma parábola.',59],
+ ['ETAPA 5 · ATRAVESSAR','Hipérbole','Incline além do ângulo crítico. Agora o plano atravessa as duas folhas do cone e gera dois ramos.',68],
+ ['ETAPA 6 · SISTEMATIZAR','Quiz de aprendizagem','Compare o que você observou com as definições. Finalize respondendo ao quiz de quatro questões.',68]
+];let step=0;
+function setStep(n){step=Math.max(0,Math.min(steps.length-1,n));const s=steps[step];document.querySelector('#stepLabel').textContent=s[0];document.querySelector('#stepTitle').textContent=s[1];document.querySelector('#stepText').textContent=s[2];document.querySelector('#stepCount').textContent=(step+1)+' / '+steps.length;document.querySelector('#progressBar').style.width=((step+1)/steps.length*100)+'%';document.querySelector('#prevStep').disabled=step===0;document.querySelector('#nextStep').textContent=step===steps.length-1?'Abrir quiz ✓':'Próxima →';if(step>0&&step<5){document.querySelector('#angle').value=s[3];updatePlane();}if(step===5){document.querySelector('#conicsPanel').style.display='none';document.querySelector('#quiz').style.display='block';document.querySelector('#quiz').scrollIntoView({block:'start'});}}
+function showMode(mode){const con=mode==='conics';document.querySelector('#conicsPanel').style.display=con?'block':'none';document.querySelector('#solidsPanel').style.display=con?'none':'block';document.querySelector('#quiz').style.display='none';document.querySelector('#tabConics').classList.toggle('active',con);document.querySelector('#tabSolids').classList.toggle('active',!con);coneGroup.visible=con;solidsGroup.visible=!con;}
+document.querySelector('#angle').addEventListener('input',e=>{const value=+e.target.value;const snaps=[0,25,59,68];const nearest=snaps.reduce((best,n)=>Math.abs(n-value)<Math.abs(best-value)?n:best,snaps[0]);if(Math.abs(nearest-value)<=1)e.target.value=nearest;updatePlane();});document.querySelector('#offset').addEventListener('input',updatePlane);
+document.querySelectorAll('[data-angle]').forEach(b=>b.addEventListener('click',()=>{document.querySelector('#angle').value=b.dataset.angle;updatePlane();}));
+document.querySelector('#showPlane').addEventListener('click',e=>{planeMesh.visible=!planeMesh.visible;planeEdges.visible=planeMesh.visible;e.currentTarget.classList.toggle('active',planeMesh.visible);});document.querySelector('#showCurve').addEventListener('click',e=>{curveGroup.visible=!curveGroup.visible;e.currentTarget.classList.toggle('active',curveGroup.visible);});
+document.querySelector('#prevStep').addEventListener('click',()=>setStep(step-1));document.querySelector('#nextStep').addEventListener('click',()=>{if(step===5){document.querySelector('#conicsPanel').style.display='none';document.querySelector('#quiz').style.display='block';}else setStep(step+1);});
+document.querySelector('#tabConics').addEventListener('click',()=>showMode('conics'));document.querySelector('#tabSolids').addEventListener('click',()=>showMode('solids'));
+document.querySelector('#solidType').addEventListener('change',e=>buildSolid(e.target.value));document.querySelector('#explode').addEventListener('click',toggleNet);document.querySelector('#resetSolid').addEventListener('click',()=>{buildSolid(document.querySelector('#solidType').value);});
+document.querySelector('#backToLesson').addEventListener('click',()=>{document.querySelector('#quiz').style.display='none';document.querySelector('#conicsPanel').style.display='block';setStep(4);});
+document.querySelector('#quizForm').addEventListener('submit',e=>{e.preventDefault();const key={q1:'b',q2:'a',q3:'b',q4:'c'};let score=0,answered=0;for(const [q,a] of Object.entries(key)){const v=document.querySelector(`input[name="${q}"]:checked`);if(v){answered++;if(v.value===a)score++;}}const result=document.querySelector('#result');result.style.display='block';result.textContent=answered<4?`Você respondeu ${answered} de 4 questões. Complete todas para conferir a pontuação.`:`Você acertou ${score} de 4 questões. ${score===4?'Excelente! Você compreendeu a relação entre o plano e as cônicas.':score>=2?'Bom trabalho! Revise as etapas em que o ângulo do plano muda.':'Retorne à exploração 3D e observe novamente os ângulos de corte.'}`;});
+document.querySelector('#resetView').addEventListener('click',()=>{camera.position.set(8,5.6,10);orbit.target.set(0,0,0);orbit.update();});document.querySelector('#fullscreen').addEventListener('click',()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.();});
+
+// WebXR is feature-detected. A controller trigger cycles through the four notable cuts.
+let vrAngles=[0,25,59,68],vrIndex=0;const controllers=[];for(let i=0;i<2;i++){const c=renderer.xr.getController(i);c.addEventListener('selectstart',()=>{vrIndex=(vrIndex+1)%vrAngles.length;document.querySelector('#angle').value=vrAngles[vrIndex];updatePlane();});scene.add(c);controllers.push(c);}
+if(navigator.xr?.isSessionSupported){navigator.xr.isSessionSupported('immersive-vr').then(ok=>{document.querySelector('#vrstatus').textContent=ok?'WebXR disponível · entre em VR pelo botão':'WebXR não detectado · modo 3D convencional ativo';if(ok){const b=VRButton.createButton(renderer);b.style.position='absolute';b.style.right='18px';b.style.top='66px';b.style.left='auto';b.style.bottom='auto';b.style.padding='10px 13px';b.style.borderRadius='12px';b.style.border='1px solid #26bbd1';b.style.background='#087f98';b.style.color='white';b.style.font='600 12px system-ui';document.querySelector('#stage').appendChild(b);}}).catch(()=>document.querySelector('#vrstatus').textContent='WebXR indisponível neste navegador');}else document.querySelector('#vrstatus').textContent='Este navegador não oferece WebXR.';
+
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}new ResizeObserver(resize).observe(canvas);resize();updatePlane();setStep(0);
+renderer.setAnimationLoop(()=>{orbit.update();renderer.render(scene,camera);});
+document.querySelector('#fatalError').style.display='none';
+</script>
+</body>
+</html>
